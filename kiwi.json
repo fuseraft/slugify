@@ -1,0 +1,8 @@
+{
+  "name": "slugify",
+  "version": "0.1.0",
+  "description": "URL-safe, filename-safe, and snake_case slug generation for Kiwi scripts.",
+  "main": "slugify.kiwi",
+  "kiwi": ">=1.4.0",
+  "dependencies": {}
+}

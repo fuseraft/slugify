@@ -1,0 +1,116 @@
+/#
+@summary A package for generating URL-safe, filename-safe, and snake_case slugs.
+#/
+package slugify
+  /#
+  @summary Convert a string to a URL-safe slug.
+  @param string input : The input string.
+  @return string : A lowercase, hyphen-separated slug.
+  #/
+  fn run(input: string): string
+    s = slugify::_transliterate(input)
+    s = s.lowercase()
+    s = regex::replace("[^a-z0-9]+", s, "-")
+    s = slugify::_trim_hyphens(s)
+    s
+  end
+
+  /#
+  @summary Convert a filename to a safe slug, preserving the file extension.
+  @param string input : The filename (e.g. "My Report (Final).docx").
+  @return string : A slugified filename (e.g. "my-report-final.docx").
+  #/
+  fn filename(input: string): string
+    parts = input.split(".")
+    if parts.size() <= 1
+      return slugify::run(input)
+    end
+    ext  = parts.last()
+    base = parts[0:parts.size() - 1].join(".")
+    slugify::run(base) + "." + ext.lowercase()
+  end
+
+  /#
+  @summary Convert a string to snake_case.
+  @param string input : The input string.
+  @return string : A lowercase, underscore-separated slug.
+  #/
+  fn snake(input: string): string
+    slugify::run(input).replace("-", "_")
+  end
+
+  /#
+  @summary Slugify a string and truncate it to a maximum length, trimming at a word boundary.
+  @param string input  : The input string.
+  @param integer max   : Maximum length (default 60).
+  @return string : A truncated slug.
+  #/
+  fn truncate(input: string, max: integer = 60): string
+    s = slugify::run(input)
+    return s when s.size() <= max
+    s = s.substring(0, max)
+    parts = s.split("-")
+    trimmed = parts[0:parts.size() - 1].join("-")
+    return s when trimmed.empty()
+    trimmed
+  end
+
+  /#
+  @summary Replace common accented and special characters with ASCII equivalents.
+  @param string input : The input string.
+  @return string : Transliterated string.
+  #/
+  fn _transliterate(input: string): string
+    s = input
+    for accent, plain in slugify::_accent_map() do
+      s = s.replace(accent, plain)
+    end
+    s
+  end
+
+  /#
+  @summary Strip leading and trailing hyphens from a string.
+  @param string s : The input string.
+  @return string : Trimmed string.
+  #/
+  fn _trim_hyphens(s: string): string
+    while s.begins_with("-") do
+      s = s.substring(1, s.size() - 1)
+    end
+    while s.ends_with("-") do
+      s = s.substring(0, s.size() - 1)
+    end
+    s
+  end
+
+  /#
+  @summary Map of accented characters to their ASCII equivalents.
+  @return hashmap
+  #/
+  fn _accent_map(): hashmap
+    {
+      "À": "a", "Á": "a", "Â": "a", "Ã": "a", "Ä": "a", "Å": "a",
+      "à": "a", "á": "a", "â": "a", "ã": "a", "ä": "a", "å": "a",
+      "È": "e", "É": "e", "Ê": "e", "Ë": "e",
+      "è": "e", "é": "e", "ê": "e", "ë": "e",
+      "Ì": "i", "Í": "i", "Î": "i", "Ï": "i",
+      "ì": "i", "í": "i", "î": "i", "ï": "i",
+      "Ò": "o", "Ó": "o", "Ô": "o", "Õ": "o", "Ö": "o", "Ø": "o",
+      "ò": "o", "ó": "o", "ô": "o", "õ": "o", "ö": "o", "ø": "o",
+      "Ù": "u", "Ú": "u", "Û": "u", "Ü": "u",
+      "ù": "u", "ú": "u", "û": "u", "ü": "u",
+      "Ý": "y", "ý": "y", "ÿ": "y",
+      "Ñ": "n", "ñ": "n",
+      "Ç": "c", "ç": "c",
+      "ß": "ss",
+      "Æ": "ae", "æ": "ae",
+      "Œ": "oe", "œ": "oe",
+      "&": " and ",
+      "@": " at ",
+      "%": " percent ",
+      "+": " plus "
+    }
+  end
+end
+
+export "slugify"

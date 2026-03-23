@@ -1,0 +1,48 @@
+include "slugify.kiwi"
+
+@tester::test("slugify::run — basic")
+fn test_run_basic()
+  tester::assert_eq(slugify::run("Hello World"),             "hello-world",       "basic")
+  tester::assert_eq(slugify::run("Hello, World!"),           "hello-world",       "punctuation")
+  tester::assert_eq(slugify::run("Top 10 Tips"),             "top-10-tips",       "numbers")
+  tester::assert_eq(slugify::run("  too   many   spaces  "), "too-many-spaces",   "extra spaces")
+  tester::assert_eq(slugify::run("---hello---"),             "hello",             "leading/trailing hyphens")
+  tester::assert_eq(slugify::run("already-a-slug"),          "already-a-slug",    "already a slug")
+  tester::assert_eq(slugify::run("CamelCaseString"),         "camelcasestring",   "camel case")
+  tester::assert_eq(slugify::run(""),                        "",                  "empty string")
+end
+
+@tester::test("slugify::run — accents and special chars")
+fn test_run_accents()
+  tester::assert_eq(slugify::run("Héllo Wörld"),   "hello-world",        "accented chars")
+  tester::assert_eq(slugify::run("Æther"),         "aether",             "Æ ligature")
+  tester::assert_eq(slugify::run("café"),          "cafe",               "é accent")
+  tester::assert_eq(slugify::run("naïve"),         "naive",              "ï accent")
+  tester::assert_eq(slugify::run("Fish & Chips"),  "fish-and-chips",     "ampersand")
+  tester::assert_eq(slugify::run("100% pure"),     "100-percent-pure",   "percent sign")
+  tester::assert_eq(slugify::run("C++ rocks"),     "c-plus-plus-rocks",  "plus sign")
+end
+
+@tester::test("slugify::filename")
+fn test_filename()
+  tester::assert_eq(slugify::filename("My Report (Final).docx"),  "my-report-final.docx",  "basic")
+  tester::assert_eq(slugify::filename("Photo.JPG"),               "photo.jpg",             "uppercase extension")
+  tester::assert_eq(slugify::filename("my.report.final.pdf"),     "my-report-final.pdf",   "multiple dots")
+  tester::assert_eq(slugify::filename("no extension here"),       "no-extension-here",     "no extension")
+end
+
+@tester::test("slugify::snake")
+fn test_snake()
+  tester::assert_eq(slugify::snake("Hello World"),   "hello_world",   "basic")
+  tester::assert_eq(slugify::snake("hello, world!"), "hello_world",   "punctuation")
+  tester::assert_eq(slugify::snake("foo-bar-baz"),   "foo_bar_baz",   "already hyphenated")
+end
+
+@tester::test("slugify::truncate")
+fn test_truncate()
+  tester::assert_eq(slugify::truncate("short title", 60),            "short-title",    "under limit")
+  tester::assert_eq(slugify::truncate("one two three four five", 14), "one-two-three", "word boundary")
+  tester::assert_eq(slugify::truncate("hello-world", 11),            "hello-world",    "exact length")
+end
+
+tester::run_tests()
